@@ -19,12 +19,18 @@ extension Message {
     /// Initializes a `Message` from a file.
     ///
     /// The serialized message should be in protocol buffer text format or binary format.
-    /// - Parameter path: Filepath with a serialized message. If the message is in text format, `path` should have
+    /// - Parameter:
+    ///   - path: Filepath with a serialized message. If the message is in text format, `path` should have
     /// `.txtpb` extension.
+    ///   - ignoreUnknownFields: ignoreUnknownFields. Whether unknown fields in the TextFormat should be
+    /// ignored. If they aren't ignored, an error will be raised if one is encountered. Note: This is a lossy option,
+    /// enabling it means part of the TextFormat is silently skipped.
     /// - Throws: Error upon failure to initialize message.
-    public init(from path: String) throws {
+    public init(from path: String, ignoreUnknownFields: Bool = false) throws {
         if path.hasSuffix(".txtpb") {
-            try self.init(textFormatString: String(contentsOfFile: path, encoding: .utf8))
+            var options = TextFormatDecodingOptions()
+            options.ignoreUnknownFields = ignoreUnknownFields
+            try self.init(textFormatString: String(contentsOfFile: path, encoding: .utf8), options: options)
         } else {
             let serializedData = try Data(contentsOf: URL(fileURLWithPath: path))
             try self.init(serializedBytes: serializedData)
